@@ -1,0 +1,125 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '3.3.4'
+    id 'io.spring.dependency-management' version '1.1.6'
+}
+
+group = 'com'
+version = '0.0.1-SNAPSHOT'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+//tasks.named('test') {
+//    useJUnitPlatform()
+//}
+
+task initLocal {
+    group = 'Deployment'
+    description = 'Builds the project, creates a Docker image, and starts the Docker containers.'
+
+    doLast {
+
+        exec {
+            commandLine 'gradlew.bat', 'build'
+        }
+
+        exec {
+            commandLine 'docker', 'build', '-t', 'hitsto:0.0.1', '.'
+        }
+
+        exec {
+            commandLine 'docker-compose', 'up', '-d'
+        }
+    }
+}
+
+task initK8s {
+    group = 'Deployment'
+    description = 'Create or updates current k8s'
+
+    doLast {
+
+        exec {
+            commandLine 'kubectl', 'apply', '-f', 'k8s/hitsto-mysql-deployment.yaml'
+        }
+
+        exec {
+            commandLine 'kubectl', 'apply', '-f', 'k8s/hitsto-mysql-service.yaml'
+        }
+
+        exec {
+            commandLine 'kubectl', 'apply', '-f', 'k8s/hitsto-redis-deployment.yaml'
+        }
+
+        exec {
+            commandLine 'kubectl', 'apply', '-f', 'k8s/hitsto-redis-service.yaml'
+        }
+
+        exec {
+            commandLine 'kubectl', 'apply', '-f', 'k8s/hitsto-app-deployment.yaml'
+        }
+
+        exec {
+            commandLine 'kubectl', 'apply', '-f', 'k8s/hitsto-app-service.yaml'
+        }
+    }
+}
+
+task tearDownK8s {
+    group = 'Deployment'
+    description = 'Create or updates current k8s'
+
+    doLast {
+
+        exec {
+            commandLine 'kubectl', 'delete', 'service', 'hitsto-mysql-db'
+        }
+
+        exec {
+            commandLine 'kubectl', 'delete', 'service', 'hitsto-redis'
+        }
+
+        exec {
+            commandLine 'kubectl', 'delete', 'service', 'hitsto-app'
+        }
+
+        exec {
+            commandLine 'kubectl', 'delete', 'deployment', 'hitsto-app'
+        }
+
+        exec {
+            commandLine 'kubectl', 'delete', 'deployment', 'hitsto-redis'
+        }
+
+        exec {
+            commandLine 'kubectl', 'delete', 'deployment', 'hitsto-mysql-db'
+        }
+    }
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+    implementation 'org.apache.commons:commons-lang3:3.0'
+    compileOnly 'org.projectlombok:lombok'
+    runtimeOnly 'com.mysql:mysql-connector-j'
+    annotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}

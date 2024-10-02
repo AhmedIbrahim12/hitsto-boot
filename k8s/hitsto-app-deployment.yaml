@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hitsto-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hitsto-app
+  template:
+    metadata:
+      labels:
+        app: hitsto-app
+    spec:
+      containers:
+        - name: hitsto-app
+          image: hitsto:0.0.1
+          env:
+            - name: DB_HOST
+              value: hitsto-mysql-db
+            - name: DB_NAME
+              value: hitsto_database
+            - name: DB_USER
+              value: root
+            - name: DB_PASS
+              value: hitsto
+            - name: REDIS_HOST
+              value: hitsto-redis
+          ports:
+            - containerPort: 8080
+              name: app
+            - containerPort: 5005
+              name: debug
+              protocol: TCP

@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hitsto-mysql-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hitsto-mysql-db
+  template:
+    metadata:
+      labels:
+        app: hitsto-mysql-db
+    spec:
+      containers:
+        - name: hitsto-mysql-db
+          image: mysql:8.0.34
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: hitsto
+          ports:
+            - containerPort: 3306

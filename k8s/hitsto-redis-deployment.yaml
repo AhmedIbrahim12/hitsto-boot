@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hitsto-redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hitsto-redis
+  template:
+    metadata:
+      labels:
+        app: hitsto-redis
+    spec:
+      containers:
+        - name: hitsto-redis
+          image: redis:7.4.0-alpine
+          ports:
+            - containerPort: 6379
