@@ -38,7 +38,7 @@ task initLocal {
         }
 
         exec {
-            commandLine 'docker', 'build', '-t', 'hitsto:0.0.1', '.'
+            commandLine 'docker', 'build', '-t', 'ahmedibrahim12/hitsto:0.0.1', '.'
         }
 
         exec {
@@ -54,27 +54,7 @@ task initK8s {
     doLast {
 
         exec {
-            commandLine 'kubectl', 'apply', '-f', 'k8s/hitsto-mysql-deployment.yaml'
-        }
-
-        exec {
-            commandLine 'kubectl', 'apply', '-f', 'k8s/hitsto-mysql-service.yaml'
-        }
-
-        exec {
-            commandLine 'kubectl', 'apply', '-f', 'k8s/hitsto-redis-deployment.yaml'
-        }
-
-        exec {
-            commandLine 'kubectl', 'apply', '-f', 'k8s/hitsto-redis-service.yaml'
-        }
-
-        exec {
-            commandLine 'kubectl', 'apply', '-f', 'k8s/hitsto-app-deployment.yaml'
-        }
-
-        exec {
-            commandLine 'kubectl', 'apply', '-f', 'k8s/hitsto-app-service.yaml'
+            commandLine 'kubectl', 'apply', '-f', 'k8s'
         }
     }
 }
@@ -86,28 +66,9 @@ task tearDownK8s {
     doLast {
 
         exec {
-            commandLine 'kubectl', 'delete', 'service', 'hitsto-mysql-db'
+            commandLine 'kubectl', 'delete', '-f', 'k8s'
         }
 
-        exec {
-            commandLine 'kubectl', 'delete', 'service', 'hitsto-redis'
-        }
-
-        exec {
-            commandLine 'kubectl', 'delete', 'service', 'hitsto-app'
-        }
-
-        exec {
-            commandLine 'kubectl', 'delete', 'deployment', 'hitsto-app'
-        }
-
-        exec {
-            commandLine 'kubectl', 'delete', 'deployment', 'hitsto-redis'
-        }
-
-        exec {
-            commandLine 'kubectl', 'delete', 'deployment', 'hitsto-mysql-db'
-        }
     }
 }
 
