@@ -13,11 +13,13 @@ services:
       - DB_NAME=hitsto_database
       - REDIS_HOST=hitsto-redis
       - REDIS_PORT=6379
+      - KC_HOST=hitsto-keycloak
+      - KC_PORT=8181
+    depends_on:
+      - hitsto-mysql-db
+      - hitsto-redis
     networks:
       - hitsto-network
-    depends_on:
-      hitsto-mysql-db:
-        condition: service_healthy
 
   hitsto-mysql-db:
     container_name: hitsto-mysql-db
@@ -26,13 +28,15 @@ services:
       - "33066:3306"
     environment:
       - MYSQL_ROOT_PASSWORD=hitsto
-    networks:
-      - hitsto-network
+    volumes:
+      - hitsto-mysql-volume:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-phitsto"]
       interval: 30s
       timeout: 10s
       retries: 3
+    networks:
+      - hitsto-network
 
   hitsto-redis:
     container_name: hitsto-redis
@@ -41,6 +45,31 @@ services:
       - "6379:6379"
     networks:
       - hitsto-network
+
+  hitsto-keycloak:
+    container_name: hitsto-keycloak
+    image: quay.io/keycloak/keycloak:25.0.6
+    ports:
+      - "8181:8080"
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: mysql
+      KC_DB_URL: jdbc:mysql://hitsto-mysql-db:3306/hitsto_database
+      KC_DB_USERNAME: root
+      KC_DB_PASSWORD: hitsto
+      KC_HOSTNAME_STRICT: "false"
+      KC_HTTP_RELATIVE_PATH: "/keycloak"
+    command:
+      --verbose start-dev
+    depends_on:
+      - hitsto-mysql-db
+      - hitsto-app
+    networks:
+      - hitsto-network
+
+volumes:
+  hitsto-mysql-volume:
 
 networks:
   hitsto-network:
